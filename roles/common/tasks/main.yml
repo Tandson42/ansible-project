@@ -17,7 +17,7 @@
 
 - name: Instalar pacotes essenciais
   ansible.builtin.apt:
-    name: "{{common_packages}}"
+    name: "{{ common_packages }}"
     state: present
 
 - name: Garantir que o servico SSH esta rodando e habilitado

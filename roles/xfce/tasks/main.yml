@@ -1,11 +1,12 @@
 ---
-- name: XFCE Ambiente Grafico
+- name: Instalar pacotes do ambiente grafico XFCE
   ansible.builtin.apt:
     name: "{{ xfce_packages }}"
     state: present
+  notify: Restart lightdm
 
-- name: ativar lightdm
-  service:
+- name: Garantir que o servico lightdm esta iniciado e habilitado
+  ansible.builtin.service:
     name: lightdm
     state: started
     enabled: true
