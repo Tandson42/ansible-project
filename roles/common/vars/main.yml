@@ -1,0 +1,9 @@
+---
+common_packages:
+  - curl
+  - git
+  - vim
+  - nano
+  - ca-certificates
+  - gnupg
+  - python3-debian

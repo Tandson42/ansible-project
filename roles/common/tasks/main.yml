@@ -17,14 +17,7 @@
 
 - name: Instalar pacotes essenciais
   ansible.builtin.apt:
-    name:
-      - curl
-      - git
-      - vim
-      - nano
-      - ca-certificates
-      - gnupg
-      - python3-debian
+    name: "{{common_packages}}"
     state: present
 
 - name: Garantir que o servico SSH esta rodando e habilitado
