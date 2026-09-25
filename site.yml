@@ -7,3 +7,4 @@
     - role: common
     - role: apache
     - role: docker
+    - role: xfce

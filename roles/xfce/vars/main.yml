@@ -1,0 +1,6 @@
+---
+xfce_packages:
+  - xorg
+  - xfce4
+  - xfce4-goodies
+  - lightdm
