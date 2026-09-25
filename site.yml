@@ -1,0 +1,9 @@
+---
+- name: Provisionar configuração interna da VM
+  hosts: vm_qemu
+  gather_facts: true
+
+  roles:
+    - role: common
+    - role: apache
+    - role: docker

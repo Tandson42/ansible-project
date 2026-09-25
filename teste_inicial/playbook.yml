@@ -1,0 +1,83 @@
+---
+- name: Provisionar configuração interna da VM
+  hosts: vm_qemu
+  gather_facts: true
+
+  tasks:
+    - name: Atualizar o cache do apt (se for Debian/Ubuntu)
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+#utilitarios
+    - name: Instalar pacotes essenciais
+      ansible.builtin.apt: #modulo, usar builtin 
+        name:
+          - curl
+          - git
+          - vim
+          - nano
+          - ca-certificates
+          - gnupg
+        state: present
+
+    - name: Garantir que um serviço essencial está rodando
+      service:
+        name: ssh
+        state: started
+        enabled: yes
+
+#Setando apache
+    - name: Instalando apache
+      apt:
+        name: apache2
+        state: present
+
+    - name: Deixando startado apache2
+      service: #olhar modulos
+        name: apache2
+        state: restarted
+        enabled: yes
+
+#instalando docker
+
+    - name: Criar diretório para chaves do chaveiro do APT
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Desativar source do CDROM (mídia de instalação removida)
+      file:
+        path: /etc/apt/sources.list.d/cdrom.sources
+        state: absent
+
+    - name: Baixar e adicionar a chave GPG oficial do Docker
+      get_url:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
+        force: true  # garante re-download (evita cache do arquivo errado antigo)
+
+    - name: Adicionar o repositório oficial do Docker ao APT
+      copy:
+        dest: /etc/apt/sources.list.d/docker.list
+        content: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_facts['distribution_release'] }} stable\n"
+        mode: '0644'
+
+    - name: Instalar o Docker e seus componentes
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        update_cache: yes
+
+    - name: Garantir que o serviço do Docker está UP e ativo na inicialização
+      service:
+        name: docker
+        state: started
+        enabled: yes
+

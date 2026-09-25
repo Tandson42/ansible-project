@@ -1,0 +1,34 @@
+---
+- name: Garantir mirror confiavel do Ubuntu
+  ansible.builtin.replace:
+    path: /etc/apt/sources.list.d/ubuntu.sources
+    regexp: 'http://br\.archive\.ubuntu\.com/ubuntu/'
+    replace: 'http://archive.ubuntu.com/ubuntu/'
+
+- name: Atualizar o cache do apt
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Desativar source do CDROM residual da instalacao
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/cdrom.sources
+    state: absent
+
+- name: Instalar pacotes essenciais
+  ansible.builtin.apt:
+    name:
+      - curl
+      - git
+      - vim
+      - nano
+      - ca-certificates
+      - gnupg
+      - python3-debian
+    state: present
+
+- name: Garantir que o servico SSH esta rodando e habilitado
+  ansible.builtin.service:
+    name: ssh
+    state: started
+    enabled: true

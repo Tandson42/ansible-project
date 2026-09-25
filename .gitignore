@@ -1,0 +1,18 @@
+# VM disk images and large virtual machine files
+*.qcow2
+*.img
+*.vmdk
+*.iso
+vms/
+
+# Ansible execution artifacts
+*.retry
+.ansible/
+__pycache__/
+*.log
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
+*~

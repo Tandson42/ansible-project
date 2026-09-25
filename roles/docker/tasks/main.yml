@@ -1,0 +1,33 @@
+---
+- name: Remover arquivo de repositorio legado docker.list se existir
+  ansible.builtin.file:
+    path: /etc/apt/sources.list.d/docker.list
+    state: absent
+
+- name: Adicionar repositorio oficial do Docker (formato deb822)
+  ansible.builtin.deb822_repository:
+    name: docker
+    types:
+      - deb
+    uris: https://download.docker.com/linux/ubuntu
+    suites:
+      - "{{ ansible_facts['distribution_release'] }}"
+    components:
+      - stable
+    architectures:
+      - amd64
+    signed_by: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  notify: Update apt cache
+
+- name: Instalar componentes do Docker Engine
+  ansible.builtin.apt:
+    name: "{{ docker_packages }}"
+    state: present
+    update_cache: false
+
+- name: Garantir que o servico do Docker esta ativo e habilitado
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
