@@ -18,4 +18,3 @@ qemu-system-x86_64 \
   -drive file="${DISK_PATH}",if=virtio,aio=threads \
   -netdev user,id=net0,hostfwd=tcp::2222-:22 \
   -device virtio-net-pci,netdev=net0 \
-  -boot menu=on,splash-time=5000
