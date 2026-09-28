@@ -1,0 +1,29 @@
+---
+- name: Garantir o dir do projeto
+  ansible.builtin.file:
+    path: /opt/app
+    state: directory
+    mode: '0755'
+
+- name: Garantir o dir do site
+  ansible.builtin.file:
+    path: /opt/app/app
+    state: directory
+    mode: '0755'
+
+- name: Copiado docker-compose.yml para o dir do projeto
+  ansible.builtin.copy:
+    src: docker-compose.yml
+    dest: /opt/app
+    mode: '0644'
+
+- name: Copiado o site para o dir do projeto
+  ansible.builtin.copy:
+    src: app/
+    dest: /opt/app/app
+    mode: '0644'
+
+- name: Executado compose
+  community.docker.docker_compose_v2:
+    project_src: /opt/app
+    state: present
