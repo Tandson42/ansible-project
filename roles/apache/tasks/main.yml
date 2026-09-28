@@ -2,11 +2,7 @@
 - name: Instalar apache2
   ansible.builtin.apt:
     name: apache2
-    state: present
+    state: absent
   #notify: Restart apache #notify redundante
 
-- name: Garantir que o servico apache2 esta iniciado e habilitado
-  ansible.builtin.service:
-    name: apache2
-    state: started
-    enabled: true
+

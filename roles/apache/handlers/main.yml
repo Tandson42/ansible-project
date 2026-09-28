@@ -3,3 +3,9 @@
   ansible.builtin.service:
     name: apache2
     state: restarted
+
+- name: Start Apache2
+  ansible.builtin.service:
+    name: apache2
+    state: started
+    enabled: true
