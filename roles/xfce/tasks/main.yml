@@ -4,9 +4,3 @@
     name: "{{ xfce_packages }}"
     state: present
   notify: Restart lightdm
-
-- name: Garantir que o servico lightdm esta iniciado e habilitado
-  ansible.builtin.service:
-    name: lightdm
-    state: started
-    enabled: true
