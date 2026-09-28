@@ -3,7 +3,7 @@
   ansible.builtin.apt:
     name: apache2
     state: present
-  notify: Restart apache
+  #notify: Restart apache #notify redundante
 
 - name: Garantir que o servico apache2 esta iniciado e habilitado
   ansible.builtin.service:
