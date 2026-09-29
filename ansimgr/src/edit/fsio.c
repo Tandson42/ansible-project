@@ -39,22 +39,39 @@ int fs_mkdir_p(const char *path)
     return 0;
 }
 
+/*
+ * Read a whole file into a NUL-terminated buffer.
+ *
+ * The buffer must not be sized from st_size: every file under /proc is a
+ * regular file that reports st_size == 0, yet still yields real bytes when
+ * read. That covers /proc/<pid>/comm, /proc/<pid>/cmdline, /proc/<pid>/stat and
+ * /proc/net/tcp, which is where the VM view gets all of its information. A
+ * stat-based size would allocate a 1-byte buffer and read nothing, making the
+ * VM look permanently off. The size hint is only an optimisation, so it is
+ * dropped and the buffer grows on demand instead.
+ */
 int fs_read_file(const char *path, char **out, size_t *len)
 {
     int fd = open(path, O_RDONLY);
     if (fd < 0) return -1;
 
-    struct stat st;
-    if (fstat(fd, &st) != 0 || !S_ISREG(st.st_mode)) {
-        close(fd);
-        return -1;
-    }
-    size_t cap = (size_t)st.st_size + 1;
+    size_t cap = 4096;
     char *buf = malloc(cap);
     if (!buf) { close(fd); return -1; }
 
     size_t got = 0;
     for (;;) {
+        if (got + 1 >= cap) {
+            if (cap > ((size_t)1 << 26)) { /* 64 MB: refuse to grow without end */
+                free(buf);
+                close(fd);
+                return -1;
+            }
+            char *nb = realloc(buf, cap * 2);
+            if (!nb) { free(buf); close(fd); return -1; }
+            buf = nb;
+            cap *= 2;
+        }
         ssize_t n = read(fd, buf + got, cap - got - 1);
         if (n < 0) {
             if (errno == EINTR) continue;
@@ -64,12 +81,6 @@ int fs_read_file(const char *path, char **out, size_t *len)
         }
         if (n == 0) break;
         got += (size_t)n;
-        if (got + 1 >= cap) {
-            cap = cap * 2 + 1;
-            char *nb = realloc(buf, cap);
-            if (!nb) { free(buf); close(fd); return -1; }
-            buf = nb;
-        }
     }
     buf[got] = '\0';
     close(fd);

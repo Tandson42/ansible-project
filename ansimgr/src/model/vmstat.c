@@ -23,11 +23,45 @@ static long now_s(void)
     return (long)ts.tv_sec;
 }
 
+/*
+ * Column layout of /proc/net/tcp and /proc/net/tcp6 (space separated):
+ *
+ *   sl  local_address rem_address  st  tx_queue:rx_queue ...
+ *   0:  0100007F:AE95 00000000:0000 0A ...
+ *
+ * The leading "sl" counter is itself "N:" and contains a colon, so it must be
+ * skipped before looking for the "ADDR:PORT" pair. The socket state is the 4th
+ * field; 0A means LISTEN.
+ */
+static int net_tcp_line(const char *line, int *port)
+{
+    const char *p = line;
+    int field = 0;
+
+    while (*p) {
+        while (*p == ' ' || *p == '\t') p++;
+        if (!*p) break;
+
+        const char *tok = p;
+        while (*p && *p != ' ' && *p != '\t') p++;
+        size_t tlen = (size_t)(p - tok);
+
+        if (field == 1) {                      /* local_address */
+            const char *colon = tok + tlen;
+            while (colon > tok && colon[-1] != ':') colon--;
+            if (colon <= tok) return 0;
+            *port = (int)strtol(colon, NULL, 16);
+        } else if (field == 3) {               /* st */
+            return tlen == 2 && tok[0] == '0' && tok[1] == 'A';
+        }
+        field++;
+    }
+    return 0;
+}
+
 int port_is_listening(int port)
 {
     static const char *files[] = { "/proc/net/tcp", "/proc/net/tcp6" };
-    char key[8];
-    snprintf(key, sizeof(key), "%04X", port);
 
     for (size_t f = 0; f < sizeof(files) / sizeof(files[0]); f++) {
         char *text = NULL;
@@ -39,25 +73,13 @@ int port_is_listening(int port)
         line_iter_init(&it, text, len);
         int found = 0;
         while (line_next(&it, &ln)) {
-            if (strncmp(ln.text, "sl", 2) != 0) continue; /* header */
-            /* local_address is "HEXADDR:HEXPORT", state is the last column. */
-            char local[64] = { 0 };
-            if (sscanf(ln.text, "%63s", local) != 1) continue;
-            char *colon = strrchr(local, ':');
-            if (!colon) continue;
-            if (strcmp(colon + 1, key) != 0) continue;
-
-            /* Find the state column: it is the 4th whitespace-separated field. */
-            const char *p = ln.text;
-            int field = 0;
-            while (*p && field < 4) {
-                while (*p == ' ' || *p == '\t') p++;
-                if (!*p) break;
-                while (*p && *p != ' ' && *p != '\t') p++;
-                field++;
+            /* The first line is the column header ("sl local_address ..."). */
+            if (strncmp(ln.text, "sl", 2) == 0) continue;
+            int line_port = -1;
+            if (net_tcp_line(ln.text, &line_port) && line_port == port) {
+                found = 1;
+                break;
             }
-            while (*p == ' ' || *p == '\t') p++;
-            if (strncmp(p, "0A", 2) == 0) { found = 1; break; }
         }
         free(text);
         if (found) return 1;
@@ -117,8 +139,9 @@ static const char *base_name(const char *p)
  *   -drive file=/abs/path/vms/meu_disco.qcow2,if=virtio,aio=threads
  * so the file name is embedded in a comma-separated option value rather than
  * standing as a whole argument. The match therefore has to be a substring, but
- * only where the name is delimited: at the start of the token, or right after
- * '=' or ','. A bare substring search would also match "outro_meu_disco.qcow2".
+ * only where the name is delimited: preceded by the start of the token, '=',
+ * ',' or a path separator, and followed by the end of the token, ',', ':' or a
+ * space. A bare substring search would also match "outro_meu_disco.qcow2".
  */
 static int token_names_disk(const char *tok, const char *disk)
 {
@@ -126,7 +149,10 @@ static int token_names_disk(const char *tok, const char *disk)
     if (dl == 0) return 0;
 
     for (const char *p = tok; (p = strstr(p, disk)) != NULL; p++) {
-        if (p != tok && p[-1] != '=' && p[-1] != ',') continue;
+        if (p != tok) {
+            char before = p[-1];
+            if (before != '=' && before != ',' && before != '/') continue;
+        }
         char after = p[dl];
         if (after == '\0' || after == ',' || after == ':' || after == ' ') {
             return 1;
