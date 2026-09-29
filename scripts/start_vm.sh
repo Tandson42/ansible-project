@@ -16,5 +16,5 @@ qemu-system-x86_64 \
   -smp 4 \
   -cpu host \
   -drive file="${DISK_PATH}",if=virtio,aio=threads \
-  -netdev user,id=net0,hostfwd=tcp::2222-:22,hostfwd=tcp::8080-:8080 \
+  -netdev user,id=net0,hostfwd=tcp::2222-:22,hostfwd=tcp::8080-:8080,hostfwd=tcp::3000-:3000 \
   -device virtio-net-pci,netdev=net0 \

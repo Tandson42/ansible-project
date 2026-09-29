@@ -1,0 +1,15 @@
+---
+# Versões das imagens
+grafana_version: "11.1.0"
+loki_version: "3.1.0"
+promtail_version: "3.1.0"
+
+# Portas expostas na VM
+grafana_port: 3000
+loki_port: 3100
+
+# Diretório base da stack de observabilidade
+observability_dir: /opt/observability
+
+# Retenção de logs no Loki (ex: 720h = 30 dias)
+loki_retention_period: 720h

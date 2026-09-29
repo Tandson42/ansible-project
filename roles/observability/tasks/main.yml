@@ -1,0 +1,46 @@
+---
+- name: Garantir diretórios da stack de observabilidade
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ observability_dir }}"
+    - "{{ observability_dir }}/grafana-data"
+
+- name: Garantir diretório de dados do Loki com permissão aberta
+  ansible.builtin.file:
+    path: "{{ observability_dir }}/loki-data"
+    state: directory
+    mode: '0777'  # Loki roda como usuário interno do container (não root)
+
+- name: Copiar docker-compose de observabilidade
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ observability_dir }}/docker-compose.yml"
+    mode: '0644'
+
+- name: Copiar configuração do Loki
+  ansible.builtin.template:
+    src: loki-config.yml.j2
+    dest: "{{ observability_dir }}/loki-config.yml"
+    mode: '0644'
+
+- name: Copiar configuração do Promtail
+  ansible.builtin.template:
+    src: promtail-config.yml.j2
+    dest: "{{ observability_dir }}/promtail-config.yml"
+    mode: '0644'
+
+- name: Ajustar permissão do volume do Grafana
+  ansible.builtin.file:
+    path: "{{ observability_dir }}/grafana-data"
+    owner: "472"  # UID padrão do usuário grafana dentro do container
+    group: "472"
+    mode: '0755'
+    recurse: true
+
+- name: Subir stack de observabilidade
+  community.docker.docker_compose_v2:
+    project_src: "{{ observability_dir }}"
+    state: present
