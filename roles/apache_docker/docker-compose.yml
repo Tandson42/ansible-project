@@ -1,6 +1,7 @@
 services:
   apache:
     image: httpd:latest
+    restart: unless-stopped
     container_name: meu-apache-compose
     ports:
       - "8080:80"
