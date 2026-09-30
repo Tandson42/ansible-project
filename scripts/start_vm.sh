@@ -38,9 +38,9 @@ start_lb() {
   echo "  Disco:       ${disk}"
   echo "  RAM / CPU:   ${ram} / ${smp} vCPUs"
   echo "  SSH:         ssh -p 2220 ubuntu@localhost"
-  echo "  Web (VIP):   http://localhost:8080 (HAProxy -> porta 80)"
-  echo "  API (VIP):   http://localhost:3001 (HAProxy -> porta 3001)"
-  echo "  Dashboard:   http://localhost:8404 (Stats HAProxy)"
+  echo "  Web (VIP):   http://localhost:8080 (Nginx -> porta 80)"
+  echo "  API (VIP):   http://localhost:3001 (Nginx -> porta 3001)"
+  echo "  LB Status:   http://localhost:8080/lb-status (Nginx stub_status)"
   echo "=========================================="
 
   qemu-system-x86_64 \
@@ -50,7 +50,7 @@ start_lb() {
     -cpu host \
     -drive file="${disk}",if=virtio,aio=threads \
     -drive file="${SEED_PATH}",media=cdrom,if=virtio,readonly=on \
-    -netdev user,id=netlb,hostfwd=tcp::2220-:22,hostfwd=tcp::8080-:80,hostfwd=tcp::3001-:3001,hostfwd=tcp::8404-:8404 \
+    -netdev user,id=netlb,hostfwd=tcp::2220-:22,hostfwd=tcp::8080-:80,hostfwd=tcp::3001-:3001 \
     -device virtio-net-pci,netdev=netlb,mac="${mac}" &
 
   PIDS+=($!)
