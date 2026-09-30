@@ -1,0 +1,57 @@
+# ─── Upstreams para as 3 VMs da aplicação ───
+upstream web_backend {
+    # Algoritmo Round-Robin por padrão
+    server 10.0.2.2:8081 max_fails=2 fail_timeout=5s;
+    server 10.0.2.2:8082 max_fails=2 fail_timeout=5s;
+    server 10.0.2.2:8083 max_fails=2 fail_timeout=5s;
+}
+
+upstream api_backend {
+    server 10.0.2.2:3011 max_fails=2 fail_timeout=5s;
+    server 10.0.2.2:3012 max_fails=2 fail_timeout=5s;
+    server 10.0.2.2:3013 max_fails=2 fail_timeout=5s;
+}
+
+# ─── Servidor Web (Porta 80) ───
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+
+    location / {
+        proxy_pass http://web_backend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_connect_timeout 2s;
+        proxy_read_timeout 30s;
+        proxy_next_upstream error timeout http_502 http_503 http_504;
+    }
+
+    # Endpoint para ver status do balanceador
+    location /lb-status {
+        stub_status;
+        access_log off;
+    }
+}
+
+# ─── Servidor API (Porta 3001) ───
+server {
+    listen 3001;
+    listen [::]:3001;
+    server_name _;
+
+    location / {
+        proxy_pass http://api_backend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        proxy_connect_timeout 2s;
+        proxy_read_timeout 30s;
+        proxy_next_upstream error timeout http_502 http_503 http_504;
+    }
+}

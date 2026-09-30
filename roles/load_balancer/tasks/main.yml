@@ -1,0 +1,31 @@
+---
+- name: Instalar Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Remover configuracao default do Nginx se existir
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload nginx
+
+- name: Configurar balanceador de carga no Nginx
+  ansible.builtin.template:
+    src: load_balancer.conf.j2
+    dest: /etc/nginx/conf.d/load_balancer.conf
+    mode: '0644'
+  notify: Reload nginx
+
+- name: Garantir que a configuracao do Nginx e valida
+  ansible.builtin.command:
+    cmd: nginx -t
+  changed_when: false
+
+- name: Garantir que o servico nginx esta ativo e habilitado
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true

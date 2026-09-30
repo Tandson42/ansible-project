@@ -1,0 +1,6 @@
+---
+- name: Provisionar Balanceador de Carga Nginx
+  hosts: load_balancer
+  gather_facts: true
+  roles:
+    - load_balancer

@@ -1,4 +1,12 @@
 ---
+- name: Instalar pre-requisitos para repositorios HTTPS
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+    state: present
+    update_cache: false
+
 - name: Remover arquivo de repositorio legado docker.list se existir
   ansible.builtin.file:
     path: /etc/apt/sources.list.d/docker.list
@@ -18,7 +26,12 @@
       - amd64
     signed_by: https://download.docker.com/linux/ubuntu/gpg
     state: present
-  notify: Update apt cache
+  register: docker_repo_result
+
+- name: Atualizar cache do apt apos configurar repositorio Docker
+  ansible.builtin.apt:
+    update_cache: true
+  when: docker_repo_result is changed
 
 - name: Instalar componentes do Docker Engine
   ansible.builtin.apt:

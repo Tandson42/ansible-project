@@ -1,11 +1,15 @@
 ---
-- name: Provisionar configuração interna da VM
-  hosts: vm_qemu
+- name: Provisionar Balanceador de Carga Nginx
+  hosts: load_balancer
   gather_facts: true
+  roles:
+    - load_balancer
 
+- name: Provisionar Nós de Aplicação (VMs)
+  hosts: vms, vm_qemu
+  gather_facts: true
   roles:
     - role: common
-    #- role: apache
     - role: docker
     - role: xfce
     - role: apache_docker
