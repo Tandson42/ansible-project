@@ -1,0 +1,44 @@
+---
+# ── Backend: diretório e arquivos ────────────────────────────────────────────
+- name: Garantir o diretório do todo-api
+  ansible.builtin.file:
+    path: /opt/todo-api
+    state: directory
+    mode: '0755'
+
+- name: Copiar docker-compose.yml do backend
+  ansible.builtin.copy:
+    src: docker-compose.yml
+    dest: /opt/todo-api/docker-compose.yml
+    mode: '0644'
+
+- name: Copiar Dockerfile
+  ansible.builtin.copy:
+    src: Dockerfile
+    dest: /opt/todo-api/Dockerfile
+    mode: '0644'
+
+- name: Copiar package.json
+  ansible.builtin.copy:
+    src: package.json
+    dest: /opt/todo-api/package.json
+    mode: '0644'
+
+- name: Copiar package-lock.json
+  ansible.builtin.copy:
+    src: package-lock.json
+    dest: /opt/todo-api/package-lock.json
+    mode: '0644'
+
+- name: Copiar server.js
+  ansible.builtin.copy:
+    src: server.js
+    dest: /opt/todo-api/server.js
+    mode: '0644'
+
+- name: Subir o container todo-api via Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: /opt/todo-api
+    build: always
+    state: present
+

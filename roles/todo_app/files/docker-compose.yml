@@ -1,0 +1,20 @@
+services:
+
+  # ── Backend API (Node.js) ────────────────────────────────────────────────────
+  todo-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: todo-api
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      NODE_ENV: production
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/api/todos"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
