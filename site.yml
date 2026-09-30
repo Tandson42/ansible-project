@@ -10,3 +10,4 @@
     - role: xfce
     - role: apache_docker
     - role: observability
+    - role: todo_app
