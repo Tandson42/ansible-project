@@ -9,4 +9,5 @@
     - role: docker
     - role: xfce
     - role: apache_docker
+    - role: mysql
     - role: healthcheck

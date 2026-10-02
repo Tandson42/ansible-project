@@ -1,0 +1,10 @@
+---
+- name: Copiando compose
+  ansible.builtin.copy:
+    src: files/docker-compose.yml
+    dest: /opt/app
+
+- name: Executando compose
+  community.docker.docker_compose_v2:
+    project_src: /opt/app
+    state: present
