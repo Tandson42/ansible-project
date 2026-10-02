@@ -9,3 +9,4 @@
     - role: docker
     - role: xfce
     - role: apache_docker
+    - role: healthcheck
