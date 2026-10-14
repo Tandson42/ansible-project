@@ -11,6 +11,24 @@ vms/
 __pycache__/
 *.log
 
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+*.tfplan
+*plan*
+.terraformrc
+terraform.rc
+# Keep .terraform.lock.hcl committed (do not ignore it)
+
 # IDE & Editor files
 .idea/
 .vscode/
