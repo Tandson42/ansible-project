@@ -1,3 +1,4 @@
+---
 - name: Helthcheck porta 8080
   ansible.builtin.wait_for:
     host: 127.0.0.1

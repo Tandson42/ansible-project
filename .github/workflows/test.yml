@@ -20,7 +20,9 @@ jobs:
           python-version: '3.14'
 
       - name: Install Ansible tools
-        run: python -m pip install ansible-core==2.21.4 ansible-lint
+        # ansible-lint fica fixado porque o --fix define a formatacao padrao:
+        # versoes diferentes podem reformatar arquivos de forma diferente.
+        run: python -m pip install ansible-core==2.21.4 ansible-lint==26.10.1
 
       - name: Install Ansible collections
         run: ansible-galaxy collection install community.docker
@@ -30,3 +32,13 @@ jobs:
 
       - name: Lint playbooks and roles
         run: ansible-lint site.yml roles/
+
+      # Garante que os arquivos ja estao na formatacao padrao do Ansible.
+      # Roda o auto-fix e falha se ele precisar alterar algo.
+      - name: Check standard formatting
+        run: |
+          ansible-lint --fix site.yml roles/
+          if ! git diff --exit-code; then
+            echo "::error::Arquivos fora da formatacao padrao do Ansible. Rode 'make format' localmente e commite as alteracoes."
+            exit 1
+          fi

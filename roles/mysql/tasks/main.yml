@@ -3,13 +3,13 @@
   ansible.builtin.file:
     path: /opt/mysql
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: Copiando compose
   ansible.builtin.copy:
     src: files/docker-compose.yml
     dest: /opt/mysql/docker-compose.yml
-    mode: '0644'
+    mode: "0644"
 
 - name: Executando compose
   community.docker.docker_compose_v2:

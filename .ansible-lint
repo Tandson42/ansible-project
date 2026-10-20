@@ -1,0 +1,7 @@
+---
+# Configuracao do ansible-lint para o repositorio.
+#
+# "production" e o profile mais estrito dos profiles oficiais e ja inclui as
+# regras de formatacao YAML (tag `formatting`/`yaml`), que sao aplicadas por
+# `ansible-lint --fix` (equivalente a `make format`).
+profile: production

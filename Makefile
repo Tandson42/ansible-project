@@ -8,7 +8,7 @@ INVENTORY    := inventory/generated.ini
 ANSIBLE_ARGS := -i $(INVENTORY)
 
 .DEFAULT_GOAL := help
-.PHONY: help init plan apply wait provision deploy destroy console fmt validate
+.PHONY: help init plan apply wait provision deploy destroy console fmt validate lint format
 
 help: ## Mostra esta ajuda
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -42,3 +42,9 @@ fmt: ## Formata os .tf
 
 validate: ## Valida a configuracao Terraform
 	terraform -chdir=$(TF_DIR) validate
+
+lint: ## Checa playbooks/roles com ansible-lint (nao altera arquivos)
+	ansible-lint site.yml roles/
+
+format: ## Aplica a formatacao padrao do Ansible (ansible-lint --fix)
+	ansible-lint --fix site.yml roles/

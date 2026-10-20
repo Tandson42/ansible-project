@@ -1,3 +1,4 @@
+---
 services:
   apache:
     image: httpd:latest
