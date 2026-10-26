@@ -1,0 +1,10 @@
+---
+- name: Recriar container Apache
+  community.docker.docker_container:
+    name: web-server
+    image: ghcr.io/tandson42/ansible-project/apache:latest
+    state: started
+    recreate: true
+    restart_policy: unless-stopped
+    published_ports:
+      - "8080:80"

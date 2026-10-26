@@ -2,14 +2,7 @@
 - name: Baixando imagem Apache customizada
   community.docker.docker_image:
     name: ghcr.io/tandson42/ansible-project/apache
-    tag: sha-9279624
+    tag: latest
     source: pull
-
-- name: Executando imagem apache
-  community.docker.docker_container:
-    name: web-server
-    image: ghcr.io/tandson42/ansible-project/apache:latest
-    state: started
-    restart_policy: unless-stopped
-    published_ports:
-      - "8080:80"
+    force_source: true
+  notify: Recriar container Apache
