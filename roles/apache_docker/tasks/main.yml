@@ -6,3 +6,6 @@
     source: pull
     force_source: true
   notify: Recriar container Apache
+
+- name: Forçar a execução dos handlers antes das roles
+  ansible.builtin.meta: flush_handlers
