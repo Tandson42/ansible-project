@@ -18,7 +18,10 @@
       - amd64
     signed_by: https://download.docker.com/linux/ubuntu/gpg
     state: present
-  notify: Update apt cache
+
+- name: Atualizar cache APT após adicionar repositorio do Docker
+  ansible.builtin.apt:
+    update_cache: true
 
 - name: Instalar componentes do Docker Engine
   ansible.builtin.apt:

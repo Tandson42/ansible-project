@@ -1,29 +1,15 @@
 ---
-- name: Garantir o dir do projeto
-  ansible.builtin.file:
-    path: /opt/app
-    state: directory
-    mode: "0755"
+- name: Baixando imagem Apache customizada
+  community.docker.docker_image:
+    name: ghcr.io/tandson42/ansible-project/apache
+    tag: sha-9279624
+    source: pull
 
-- name: Garantir o dir do site
-  ansible.builtin.file:
-    path: /opt/app/app
-    state: directory
-    mode: "0755"
-
-- name: Copiado docker-compose.yml para o dir do projeto
-  ansible.builtin.copy:
-    src: docker-compose.yml
-    dest: /opt/app
-    mode: "0644"
-
-- name: Copiado o site para o dir do projeto
-  ansible.builtin.copy:
-    src: app/
-    dest: /opt/app/app
-    mode: "0644"
-
-- name: Executado compose
-  community.docker.docker_compose_v2:
-    project_src: /opt/app
-    state: present
+- name: Executando imagem apache
+  community.docker.docker_container:
+    name: web-server
+    image: ghcr.io/tandson42/ansible-project/apache:sha-9279624
+    state: started
+    restart_policy: unless-stopped
+    published_ports:
+      - "8080:80"
