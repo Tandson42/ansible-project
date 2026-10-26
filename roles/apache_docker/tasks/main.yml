@@ -8,7 +8,7 @@
 - name: Executando imagem apache
   community.docker.docker_container:
     name: web-server
-    image: ghcr.io/tandson42/ansible-project/apache:sha-9279624
+    image: ghcr.io/tandson42/ansible-project/apache:latest
     state: started
     restart_policy: unless-stopped
     published_ports:
