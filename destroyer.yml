@@ -21,12 +21,14 @@
       community.docker.docker_container:
         name: web-server
         state: absent
+      failed_when: false
 
     - name: Remover imagem Apache customizada
       community.docker.docker_image:
         name: ghcr.io/tandson42/ansible-project/apache
         tag: latest
         state: absent
+      failed_when: false
 
     - name: Remover pacotes do ambiente gráfico XFCE
       ansible.builtin.apt:
@@ -68,8 +70,6 @@
           - git
           - vim
           - nano
-          - ca-certificates
-          - gnupg
           - python3-debian
         state: absent
         purge: true
