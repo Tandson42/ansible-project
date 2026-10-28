@@ -10,4 +10,5 @@
     - role: xfce
     - role: apache_docker
     - role: mysql
+    - role: nginx
     - role: healthcheck

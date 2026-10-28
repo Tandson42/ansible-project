@@ -1,0 +1,10 @@
+---
+- name: Recriar container nginx
+  community.docker.docker_container:
+    name: web-server-nginx
+    image: nginx:stable-alpine3.24-slim
+    state: started
+    recreate: true
+    restart_policy: unless-stopped
+    published_ports:
+      - "8081:80"

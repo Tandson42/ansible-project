@@ -1,0 +1,11 @@
+---
+- name: Baixando imagem Nginx
+  community.docker.docker_image:
+    name: nginx:stable-alpine3.24-slim
+    tag: latest
+    source: pull
+    force_source: true
+  notify: Recriar container nginx
+
+- name: Forçar a execução dos handlers antes das roles
+  ansible.builtin.meta: flush_handlers

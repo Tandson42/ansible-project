@@ -1,0 +1,76 @@
+---
+- name: Desfazer toda a infraestrutura provisionada
+  hosts: vm_qemu
+  gather_facts: false
+
+  tasks:
+    - name: Derrubar compose do MySQL e remover volumes
+      community.docker.docker_compose_v2:
+        project_src: /opt/mysql
+        state: absent
+        remove_orphans: true
+        volumes: true
+      failed_when: false
+
+    - name: Remover diretório do MySQL
+      ansible.builtin.file:
+        path: /opt/mysql
+        state: absent
+
+    - name: Remover container Apache
+      community.docker.docker_container:
+        name: web-server
+        state: absent
+      failed_when: false
+
+    - name: Remover imagem Apache customizada
+      community.docker.docker_image:
+        name: ghcr.io/tandson42/ansible-project/apache
+        tag: latest
+        state: absent
+      failed_when: false
+
+    - name: Remover pacotes do ambiente gráfico XFCE
+      ansible.builtin.apt:
+        name:
+          - xorg
+          - xfce4
+          - xfce4-goodies
+          - lightdm
+        state: absent
+        purge: true
+        autoremove: true
+
+    - name: Remover componentes do Docker Engine
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: absent
+        purge: true
+        autoremove: true
+
+    - name: Remover repositório do Docker
+      ansible.builtin.file:
+        path: /etc/apt/sources.list.d/docker.sources
+        state: absent
+
+    - name: Remover chave do repositório do Docker
+      ansible.builtin.file:
+        path: /etc/apt/keyrings/docker.asc
+        state: absent
+
+    - name: Remover pacotes essenciais instalados pelo projeto
+      ansible.builtin.apt:
+        name:
+          - curl
+          - git
+          - vim
+          - nano
+          - python3-debian
+        state: absent
+        purge: true
+        autoremove: true

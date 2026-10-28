@@ -7,3 +7,4 @@ common_packages:
   - ca-certificates
   - gnupg
   - python3-debian
+  - python3-requests

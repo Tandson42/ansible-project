@@ -23,5 +23,5 @@ qemu-system-x86_64 \
   -cpu host \
   -drive file="${DISK_PATH}",if=virtio,aio=threads \
   -drive file="${SEED_IMAGE}",format=raw,if=virtio,readonly=on \
-  -netdev user,id=net0,hostfwd=tcp::2222-:22,hostfwd=tcp::8080-:8080,hostfwd=tcp::3306-:3306 \
+  -netdev user,id=net0,hostfwd=tcp::2222-:22,hostfwd=tcp::8080-:8080,hostfwd=tcp::8081-:8081,hostfwd=tcp::3306-:3306 \
   -device virtio-net-pci,netdev=net0 \
