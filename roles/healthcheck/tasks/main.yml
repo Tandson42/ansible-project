@@ -17,3 +17,22 @@
   until: healthcheck_response.status == 200
   retries: 5
   delay: 3
+
+- name: Helthcheck porta 8081
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 8081
+    state: started
+    timeout: 30
+    delay: 2
+
+- name: Healthcheck da aplicação HTTP
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:8081"
+    method: GET
+    status_code: 200
+    return_content: true
+  register: healthcheck_response
+  until: healthcheck_response.status == 200
+  retries: 5
+  delay: 3
