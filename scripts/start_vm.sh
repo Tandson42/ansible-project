@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DISK_PATH="${SCRIPT_DIR}/../vms/vm1.qcow2"
+DISK_PATH="${SCRIPT_DIR}/../vms/vm2.qcow2"
 SEED_IMAGE="${SCRIPT_DIR}/../vms/seed.img" #imagem de user/pass
 
 if [ ! -f "${DISK_PATH}" ]; then
