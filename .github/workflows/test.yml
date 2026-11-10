@@ -28,16 +28,20 @@ jobs:
         run: ansible-galaxy collection install community.docker
 
       - name: Check playbook syntax
+        working-directory: ansible
         run: ansible-playbook site.yml --syntax-check
 
       - name: Lint playbooks and roles
+        working-directory: ansible
         run: ansible-lint site.yml roles/
 
       # Garante que os arquivos ja estao na formatacao padrao do Ansible.
       # Roda o auto-fix e falha se ele precisar alterar algo.
       - name: Check standard formatting
         run: |
+          cd ansible
           ansible-lint --fix site.yml roles/
+          cd ..
           if ! git diff --exit-code; then
             echo "::error::Arquivos fora da formatacao padrao do Ansible. Rode 'make format' localmente e commite as alteracoes."
             exit 1

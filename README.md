@@ -31,37 +31,37 @@ ansible-galaxy collection install community.docker
 
 ```text
 .
-├── ansible.cfg                      # Configurações globais (inventory, roles_path)
+├── ansible/                         # Todo o conteúdo do Ansible
+│   ├── ansible.cfg                  # Configurações globais (inventory, roles_path)
+│   ├── site.yml                     # Playbook mestre (orquestrador)
+│   ├── destroyer.yml                # Remove containers, volumes e pacotes provisionados
+│   ├── inventory/
+│   │   ├── hosts.ini                # Inventário de hosts
+│   │   └── group_vars/
+│   │       └── vm_qemu.yml          # Variáveis de conexão e become da VM
+│   └── roles/
+│       ├── common/                  # Mirror do apt, pacotes essenciais e serviço SSH
+│       ├── apache/                  # Garante o Apache2 nativo ausente (desativada no site.yml)
+│       ├── docker/                  # Docker Engine oficial via deb822_repository
+│       ├── xfce/                    # Ambiente gráfico XFCE com LightDM
+│       ├── apache_docker/           # Imagem Apache customizada + site estático
+│       │   ├── Dockerfile
+│       │   ├── app/                 # index.html, style.css e script.js
+│       │   ├── docker-compose.yml   # Compose para execução manual
+│       │   ├── handlers/main.yml
+│       │   └── tasks/main.yml
+│       ├── nginx/                   # Container Nginx na porta 8081
+│       ├── mysql/                   # MySQL containerizado via docker compose
+│       └── healthcheck/             # Health check das portas 8080 e 8081
+│
 ├── .ansible-lint                    # Perfil do ansible-lint (production)
 ├── .gitignore                       # Ignora discos pesados (*.qcow2), caches, logs e estados
 ├── README.md                        # Documentação do projeto
-├── site.yml                         # Playbook mestre (orquestrador)
-├── destroyer.yml                    # Remove containers, volumes e pacotes provisionados
 │
 ├── .github/
 │   └── workflows/
 │       ├── test.yml                 # CI: syntax-check + ansible-lint + formatação
 │       └── publish-apache-image.yml # CI: build e push da imagem Apache no GHCR
-│
-├── inventory/
-│   ├── hosts.ini                    # Inventário de hosts
-│   └── group_vars/
-│       └── vm_qemu.yml              # Variáveis de conexão e become da VM
-│
-├── roles/
-│   ├── common/                      # Mirror do apt, pacotes essenciais e serviço SSH
-│   ├── apache/                      # Garante o Apache2 nativo ausente (desativada no site.yml)
-│   ├── docker/                      # Docker Engine oficial via deb822_repository
-│   ├── xfce/                        # Ambiente gráfico XFCE com LightDM
-│   ├── apache_docker/               # Imagem Apache customizada + site estático
-│   │   ├── Dockerfile
-│   │   ├── app/                     # index.html, style.css e script.js
-│   │   ├── docker-compose.yml       # Compose para execução manual
-│   │   ├── handlers/main.yml
-│   │   └── tasks/main.yml
-│   ├── nginx/                       # Container Nginx na porta 8081
-│   ├── mysql/                       # MySQL containerizado via docker compose
-│   └── healthcheck/                 # Health check das portas 8080 e 8081
 │
 ├── scripts/
 │   ├── start_vm.sh                  # Inicialização da VM QEMU com port forwarding
@@ -106,7 +106,7 @@ A role `apache` mantém o Apache nativo **ausente** na VM:
     state: absent
 ```
 
-Ela está comentada no `site.yml`, mas continua disponível para garantir que uma imagem nova não traga o Apache2 instalado. O serviço web usado pelo projeto é o container criado pela role `apache_docker`.
+Ela está comentada no `ansible/site.yml`, mas continua disponível para garantir que uma imagem nova não traga o Apache2 instalado. O serviço web usado pelo projeto é o container criado pela role `apache_docker`.
 
 Se você rodar na VM e ver isso, é o comportamento esperado:
 
@@ -123,7 +123,7 @@ Unit apache2.service could not be found.
 | `web-server-nginx` | `nginx:stable-alpine3.24-slim` | `8081` | Role `nginx` |
 | `mysql` | `mysql:latest` | `3306` | Role `mysql` (docker compose em `/opt/mysql`) |
 
-A imagem Apache é construída a partir de `roles/apache_docker/Dockerfile` e publicada no GitHub Container Registry pelo workflow `publish-apache-image.yml`. A role baixa a imagem e o handler recria o container `web-server`.
+A imagem Apache é construída a partir de `ansible/roles/apache_docker/Dockerfile` e publicada no GitHub Container Registry pelo workflow `publish-apache-image.yml`. A role baixa a imagem e o handler recria o container `web-server`.
 
 ## Fluxo de rede
 
@@ -152,6 +152,8 @@ Para deploys, prefira `127.0.0.1` a `localhost` no `curl`: o túnel SSH escuta e
 
 ## Como Usar
 
+> Os comandos do Ansible devem ser executados a partir do diretório `ansible/`, onde está o `ansible.cfg` do projeto. Os blocos abaixo partem da raiz do repositório.
+
 ### 1. Iniciar a Máquina Virtual (se não estiver rodando)
 
 ```bash
@@ -171,12 +173,14 @@ Os containers usam `restart: unless-stopped`/`restart_policy: unless-stopped`, e
 ### 2. Testar Conectividade
 
 ```bash
+cd ansible
 ansible vm_qemu -m ping
 ```
 
 ### 3. Validar Sintaxe, Linting e Formatação
 
 ```bash
+cd ansible
 ansible-playbook site.yml --syntax-check
 ansible-lint site.yml roles/          # não altera arquivos
 ansible-lint --fix site.yml roles/    # aplica o padrão
@@ -187,6 +191,7 @@ ansible-lint --fix site.yml roles/    # aplica o padrão
 ### 4. Executar o Playbook Principal
 
 ```bash
+cd ansible
 ansible-playbook site.yml
 ```
 
@@ -200,7 +205,7 @@ Apache:
 curl http://127.0.0.1:8080/
 ```
 
-Ou abra `http://127.0.0.1:8080` no navegador. O conteúdo vem de `roles/apache_docker/app/` e é copiado para `/usr/local/apache2/htdocs/` durante o build da imagem.
+Ou abra `http://127.0.0.1:8080` no navegador. O conteúdo vem de `ansible/roles/apache_docker/app/` e é copiado para `/usr/local/apache2/htdocs/` durante o build da imagem.
 
 Nginx:
 
@@ -214,15 +219,16 @@ MySQL:
 mysql -h 127.0.0.1 -P 3306 -u tand -p
 ```
 
-O banco padrão é `banco_do_tand` e a senha de exemplo é `123` (definida em `roles/mysql/files/docker-compose.yml`).
+O banco padrão é `banco_do_tand` e a senha de exemplo é `123` (definida em `ansible/roles/mysql/files/docker-compose.yml`).
 
 ### 6. Desfazer a Infraestrutura
 
 ```bash
+cd ansible
 ansible-playbook destroyer.yml
 ```
 
-O `destroyer.yml` remove os containers/volumes do MySQL, o container e a imagem Apache, os pacotes do XFCE, os componentes do Docker e os pacotes essenciais instalados pelo projeto.
+O `ansible/destroyer.yml` remove os containers/volumes do MySQL, o container e a imagem Apache, os pacotes do XFCE, os componentes do Docker e os pacotes essenciais instalados pelo projeto.
 
 ## Formatação padrão
 
@@ -235,12 +241,14 @@ profile: production
 Aplicar o padrão em todo o projeto:
 
 ```bash
+cd ansible
 ansible-lint --fix site.yml roles/
 ```
 
 Conferir sem alterar arquivos (é o que o CI faz):
 
 ```bash
+cd ansible
 ansible-lint site.yml roles/
 ```
 
@@ -261,21 +269,21 @@ O workflow [`.github/workflows/test.yml`](.github/workflows/test.yml) roda em to
 
 | Passo | Comando |
 |---|---|
-| Sintaxe | `ansible-playbook site.yml --syntax-check` |
-| Lint | `ansible-lint site.yml roles/` |
-| Formatação | `ansible-lint --fix site.yml roles/` + `git diff --exit-code` |
+| Sintaxe | `cd ansible && ansible-playbook site.yml --syntax-check` |
+| Lint | `cd ansible && ansible-lint site.yml roles/` |
+| Formatação | `cd ansible && ansible-lint --fix site.yml roles/` + `git diff --exit-code` |
 
 O passo de formatação aplica o auto-fix e falha se o `git diff` acusar qualquer alteração — ou seja, o repositório precisa estar formatado antes do merge. Para corrigir localmente:
 
 ```bash
-ansible-lint --fix site.yml roles/
+(cd ansible && ansible-lint --fix site.yml roles/)
 git add -A
 git commit -m "style: aplica formatacao padrao do Ansible"
 ```
 
 As versões são fixadas no workflow para o resultado ser determinístico: `ansible-core==2.21.4` e `ansible-lint==26.10.1`. Fixar o `ansible-lint` é importante porque versões diferentes podem reformatar os arquivos de forma diferente.
 
-O workflow [`.github/workflows/publish-apache-image.yml`](.github/workflows/publish-apache-image.yml) roda em `push` na `main` quando algo em `roles/apache_docker/**` muda (ou via `workflow_dispatch`). Ele constrói `roles/apache_docker/Dockerfile` e publica a imagem `ghcr.io/tandson42/ansible-project/apache` com as tags `latest` e `sha-<commit>`.
+O workflow [`.github/workflows/publish-apache-image.yml`](.github/workflows/publish-apache-image.yml) roda em `push` na `main` quando algo em `ansible/roles/apache_docker/**` muda (ou via `workflow_dispatch`). Ele constrói a imagem a partir de `ansible/roles/apache_docker/Dockerfile` e publica `ghcr.io/tandson42/ansible-project/apache` com as tags `latest` e `sha-<commit>`.
 
 ## Terraform (MiniStack/LocalStack)
 
@@ -333,7 +341,7 @@ Confira se a VM está rodando com o port forwarding correto e se os containers s
 docker ps --format 'table {{.Names}}\t{{.Status}}\t{{.Ports}}'
 ```
 
-Se o `start_vm.sh` foi alterado, reinicie a VM para aplicar o novo `-netdev`. O playbook `site.yml` também valida as portas 8080 e 8081 na role `healthcheck`.
+Se o `start_vm.sh` foi alterado, reinicie a VM para aplicar o novo `-netdev`. O playbook `ansible/site.yml` também valida as portas 8080 e 8081 na role `healthcheck`.
 
 **Container com `Exited (255)` logo após subir a VM**
 
@@ -344,11 +352,11 @@ docker inspect -f "{{.HostConfig.RestartPolicy.Name}}" web-server
 docker inspect -f "{{.HostConfig.RestartPolicy.Name}}" web-server-nginx
 ```
 
-Alternativa imediata, sem editar nada: `ansible-playbook site.yml`.
+Alternativa imediata, sem editar nada: `cd ansible && ansible-playbook site.yml`.
 
 **Site mostra "Index of /" em vez do conteúdo**
 
-A imagem Apache pode ter sido publicada sem o conteúdo de `roles/apache_docker/app/`. Confira dentro do container:
+A imagem Apache pode ter sido publicada sem o conteúdo de `ansible/roles/apache_docker/app/`. Confira dentro do container:
 
 ```bash
 docker exec web-server ls -Al /usr/local/apache2/htdocs/

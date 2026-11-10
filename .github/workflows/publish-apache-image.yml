@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "roles/apache_docker/**"
+      - "ansible/roles/apache_docker/**"
       - ".github/workflows/publish-apache-image.yml"
   workflow_dispatch:
 
@@ -44,8 +44,8 @@ jobs:
       - name: Build and push Apache image
         uses: docker/build-push-action@v6
         with:
-          context: ./roles/apache_docker/app
-          file: ./roles/apache_docker/Dockerfile
+          context: ./ansible/roles/apache_docker/app
+          file: ./ansible/roles/apache_docker/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

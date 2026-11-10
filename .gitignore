@@ -30,7 +30,7 @@ terraform.rc
 # Keep .terraform.lock.hcl committed (do not ignore it)
 
 # Inventario Ansible gerado pelo Terraform (terraform/kvm)
-inventory/generated.ini
+ansible/inventory/generated.ini
 
 # IDE & Editor files
 .idea/
