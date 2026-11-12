@@ -1,0 +1,14 @@
+---
+- name: Recriar container node-exporter
+  community.docker.docker_container:
+    name: node-exporter
+    image: prom/node-exporter:latest
+    state: started
+    recreate: true
+    restart_policy: unless-stopped
+    published_ports:
+      - "9100:9100"
+    command:
+      - "--path.rootfs=/host"
+    volumes:
+      - /:/host:ro,rslave

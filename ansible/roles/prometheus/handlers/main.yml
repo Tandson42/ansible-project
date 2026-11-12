@@ -1,0 +1,12 @@
+---
+- name: Recriar container prometheus
+  community.docker.docker_container:
+    name: prometheus
+    image: prom/prometheus:latest
+    state: started
+    recreate: true
+    restart_policy: unless-stopped
+    network_mode: host
+    volumes:
+      - /opt/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus

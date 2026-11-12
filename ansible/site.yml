@@ -1,14 +1,33 @@
 ---
-- name: Provisionar configuração interna da VM
+- name: Provisionar configuração base e Node Exporter em todas as VMs
   hosts: vm_qemu
   gather_facts: true
-
   roles:
     - role: common
-    # - role: apache
     - role: docker
-    - role: xfce
-    - role: apache_docker
+    - role: node_exporter
+
+- name: Provisionar banco de dados MySQL
+  hosts: dbservers
+  gather_facts: true
+  roles:
     - role: mysql
+
+- name: Provisionar servidores Web Apache
+  hosts: webservers
+  gather_facts: true
+  roles:
+    - role: apache_docker
+
+- name: Provisionar Nginx Load Balancer e Prometheus Centralizado
+  hosts: loadbalancer
+  gather_facts: true
+  roles:
     - role: nginx
+    - role: prometheus
+
+- name: Executar Healthcheck nos serviços
+  hosts: vm_qemu
+  gather_facts: true
+  roles:
     - role: healthcheck

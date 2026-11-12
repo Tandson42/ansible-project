@@ -1,0 +1,23 @@
+---
+- name: Baixando imagem do Node Exporter
+  community.docker.docker_image:
+    name: prom/node-exporter:latest
+    source: pull
+    force_source: true
+  notify: Recriar container node-exporter
+
+- name: Forçar a execução dos handlers do Node Exporter
+  ansible.builtin.meta: flush_handlers
+
+- name: Garantir que o container do Node Exporter está em execução
+  community.docker.docker_container:
+    name: node-exporter
+    image: prom/node-exporter:latest
+    state: started
+    restart_policy: unless-stopped
+    published_ports:
+      - "9100:9100"
+    command:
+      - "--path.rootfs=/host"
+    volumes:
+      - /:/host:ro,rslave

@@ -4,6 +4,36 @@
   gather_facts: false
 
   tasks:
+    - name: Remover container do Prometheus
+      community.docker.docker_container:
+        name: prometheus
+        state: absent
+      failed_when: false
+
+    - name: Remover diretório do Prometheus
+      ansible.builtin.file:
+        path: /opt/prometheus
+        state: absent
+      failed_when: false
+
+    - name: Remover container do Node Exporter
+      community.docker.docker_container:
+        name: node-exporter
+        state: absent
+      failed_when: false
+
+    - name: Remover container do Nginx Load Balancer
+      community.docker.docker_container:
+        name: web-server-nginx
+        state: absent
+      failed_when: false
+
+    - name: Remover diretório do Nginx
+      ansible.builtin.file:
+        path: /opt/nginx
+        state: absent
+      failed_when: false
+
     - name: Derrubar compose do MySQL e remover volumes
       community.docker.docker_compose_v2:
         project_src: /opt/mysql

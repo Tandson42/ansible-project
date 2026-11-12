@@ -1,0 +1,34 @@
+---
+- name: Garantir o diretório de configuração do Prometheus
+  ansible.builtin.file:
+    path: /opt/prometheus
+    state: directory
+    mode: "0755"
+
+- name: Copiar configuração do Prometheus
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: /opt/prometheus/prometheus.yml
+    mode: "0644"
+  notify: Recriar container prometheus
+
+- name: Baixando imagem do Prometheus
+  community.docker.docker_image:
+    name: prom/prometheus:latest
+    source: pull
+    force_source: true
+  notify: Recriar container prometheus
+
+- name: Forçar a execução dos handlers antes das próximas etapas
+  ansible.builtin.meta: flush_handlers
+
+- name: Garantir que o container do Prometheus está em execução
+  community.docker.docker_container:
+    name: prometheus
+    image: prom/prometheus:latest
+    state: started
+    restart_policy: unless-stopped
+    network_mode: host
+    volumes:
+      - /opt/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus

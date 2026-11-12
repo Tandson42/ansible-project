@@ -1,38 +1,91 @@
 ---
-- name: Helthcheck porta 8080
+- name: Helthcheck porta 8080 Apache
   ansible.builtin.wait_for:
     host: 127.0.0.1
     port: 8080
     state: started
     timeout: 30
     delay: 2
+  when: "'webservers' in group_names"
 
-- name: Healthcheck da aplicação HTTP
+- name: Healthcheck da aplicação HTTP Apache
   ansible.builtin.uri:
     url: "http://127.0.0.1:8080"
     method: GET
     status_code: 200
     return_content: true
-  register: healthcheck_response
-  until: healthcheck_response.status == 200
+  register: healthcheck_web
+  until: healthcheck_web.status == 200
   retries: 5
   delay: 3
+  when: "'webservers' in group_names"
 
-- name: Helthcheck porta 8081
+- name: Helthcheck porta 80 Nginx Load Balancer
   ansible.builtin.wait_for:
     host: 127.0.0.1
-    port: 8081
+    port: 80
+    state: started
+    timeout: 30
+    delay: 2
+  when: "'loadbalancer' in group_names"
+
+- name: Healthcheck do Nginx Load Balancer
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:80"
+    method: GET
+    status_code: 200
+    return_content: true
+  register: healthcheck_lb
+  until: healthcheck_lb.status == 200
+  retries: 5
+  delay: 3
+  when: "'loadbalancer' in group_names"
+
+- name: Helthcheck porta 9090 Prometheus Server
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 9090
+    state: started
+    timeout: 30
+    delay: 2
+  when: "'loadbalancer' in group_names"
+
+- name: Healthcheck do Prometheus Server
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:9090/-/healthy"
+    method: GET
+    status_code: 200
+    return_content: true
+  register: healthcheck_prom
+  until: healthcheck_prom.status == 200
+  retries: 5
+  delay: 3
+  when: "'loadbalancer' in group_names"
+
+- name: Helthcheck porta 9100 Node Exporter
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 9100
     state: started
     timeout: 30
     delay: 2
 
-- name: Healthcheck da aplicação HTTP
+- name: Healthcheck do Node Exporter
   ansible.builtin.uri:
-    url: "http://127.0.0.1:8081"
+    url: "http://127.0.0.1:9100/metrics"
     method: GET
     status_code: 200
-    return_content: true
-  register: healthcheck_response
-  until: healthcheck_response.status == 200
+    return_content: false
+  register: healthcheck_node
+  until: healthcheck_node.status == 200
   retries: 5
   delay: 3
+
+- name: Helthcheck porta 3306 MySQL
+  ansible.builtin.wait_for:
+    host: 127.0.0.1
+    port: 3306
+    state: started
+    timeout: 30
+    delay: 2
+  when: "'dbservers' in group_names"

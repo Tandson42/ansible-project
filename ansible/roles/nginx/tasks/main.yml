@@ -1,4 +1,17 @@
 ---
+- name: Garantir o diretório de configuração do Nginx
+  ansible.builtin.file:
+    path: /opt/nginx/conf.d
+    state: directory
+    mode: "0755"
+
+- name: Copiar configuração do Load Balancer
+  ansible.builtin.template:
+    src: nginx_lb.conf.j2
+    dest: /opt/nginx/conf.d/default.conf
+    mode: "0644"
+  notify: Recriar container nginx
+
 - name: Baixando imagem Nginx
   community.docker.docker_image:
     name: nginx:stable-alpine3.24-slim

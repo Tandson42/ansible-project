@@ -1,0 +1,80 @@
+{
+    "_meta": {
+        "hostvars": {
+            "db01": {
+                "ansible_become": true,
+                "ansible_become_method": "sudo",
+                "ansible_host": "127.0.0.1",
+                "ansible_port": 2224,
+                "ansible_python_interpreter": "/usr/bin/python3",
+                "ansible_user": "ubuntu"
+            },
+            "lb01": {
+                "ansible_become": true,
+                "ansible_become_method": "sudo",
+                "ansible_host": "127.0.0.1",
+                "ansible_port": 2221,
+                "ansible_python_interpreter": "/usr/bin/python3",
+                "ansible_user": "ubuntu",
+                "nginx_upstream_servers": [
+                    {
+                        "host": "10.0.2.2",
+                        "name": "web01",
+                        "port": 8082
+                    },
+                    {
+                        "host": "10.0.2.2",
+                        "name": "web02",
+                        "port": 8083
+                    }
+                ]
+            },
+            "web01": {
+                "ansible_become": true,
+                "ansible_become_method": "sudo",
+                "ansible_host": "127.0.0.1",
+                "ansible_port": 2222,
+                "ansible_python_interpreter": "/usr/bin/python3",
+                "ansible_user": "ubuntu"
+            },
+            "web02": {
+                "ansible_become": true,
+                "ansible_become_method": "sudo",
+                "ansible_host": "127.0.0.1",
+                "ansible_port": 2223,
+                "ansible_python_interpreter": "/usr/bin/python3",
+                "ansible_user": "ubuntu"
+            }
+        },
+        "profile": "inventory_legacy"
+    },
+    "all": {
+        "children": [
+            "ungrouped",
+            "vm_qemu"
+        ]
+    },
+    "dbservers": {
+        "hosts": [
+            "db01"
+        ]
+    },
+    "loadbalancer": {
+        "hosts": [
+            "lb01"
+        ]
+    },
+    "vm_qemu": {
+        "children": [
+            "loadbalancer",
+            "webservers",
+            "dbservers"
+        ]
+    },
+    "webservers": {
+        "hosts": [
+            "web01",
+            "web02"
+        ]
+    }
+}

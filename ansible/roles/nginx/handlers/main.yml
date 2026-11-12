@@ -7,4 +7,6 @@
     recreate: true
     restart_policy: unless-stopped
     published_ports:
-      - "8081:80"
+      - "80:80"
+    volumes:
+      - /opt/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro
