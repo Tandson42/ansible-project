@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Script Gerenciador de VMs QEMU (4 VMs x 1GB RAM)
+# Script Gerenciador de VMs QEMU (VMs 1-3: 1GB RAM, VM 4 db01: 2GB RAM)
 # DevOps Lab - Tandson
 # ==============================================================================
 set -euo pipefail
@@ -15,6 +15,7 @@ SEED_IMAGE="${VMS_DIR}/seed.img"
 # Configurações padrão
 TOTAL_VMS=4
 VM_RAM="${VM_RAM:-1G}"
+DB_VM_RAM="${DB_VM_RAM:-2G}"
 VM_CPUS="${VM_CPUS:-1}"
 VM_DISK_SIZE="${VM_DISK_SIZE:-20G}"
 
@@ -37,6 +38,14 @@ get_vm_role() {
     3) echo "web02 (Apache HTTP 2)" ;;
     4) echo "db01  (MySQL DB)" ;;
     *) echo "vm${id}" ;;
+  esac
+}
+
+get_vm_ram() {
+  local id="$1"
+  case "${id}" in
+    4) echo "${DB_VM_RAM}" ;;
+    *) echo "${VM_RAM}" ;;
   esac
 }
 
@@ -84,6 +93,8 @@ start_single_vm() {
   local id="$1"
   local role
   role="$(get_vm_role "${id}")"
+  local vm_ram
+  vm_ram="$(get_vm_ram "${id}")"
   local disk_path="${VMS_DIR}/vm${id}.qcow2"
   local pid_file="${RUN_DIR}/vm${id}.pid"
   local log_file="${LOGS_DIR}/vm${id}.log"
@@ -110,7 +121,7 @@ start_single_vm() {
   local metrics_port=$((9090 + id))  # VM1: 9091 (Prometheus), VM2: 9092, VM3: 9093, VM4: 9094
   local node_port=$((9100 + id))     # VM1: 9101 (Node Exp), VM2: 9102, VM3: 9103, VM4: 9104
 
-  echo -n "[INICIANDO] VM ${id} [${role}] (RAM: ${VM_RAM}, CPU: ${VM_CPUS}, MAC: ${mac_addr})... "
+  echo -n "[INICIANDO] VM ${id} [${role}] (RAM: ${vm_ram}, CPU: ${VM_CPUS}, MAC: ${mac_addr})... "
 
   local net_args=()
   if [ "${NET_MODE}" = "bridge" ]; then
@@ -127,7 +138,7 @@ start_single_vm() {
 
   qemu-system-x86_64 \
     -enable-kvm \
-    -m "${VM_RAM}" \
+    -m "${vm_ram}" \
     -smp "${VM_CPUS}" \
     -cpu host \
     -drive file="${disk_path}",if=virtio,aio=threads \
@@ -196,6 +207,8 @@ status_all() {
     local pid
     local role
     role="$(get_vm_role "${i}")"
+    local vm_ram
+    vm_ram="$(get_vm_ram "${i}")"
     local status="PARADA"
     local pid_str="-"
     local mac_addr
@@ -220,7 +233,7 @@ status_all() {
     fi
 
     printf "VM %-2d | %-24s | %-9s | %-7s | %-5s | %-5s | %-19s | %-32s\n" \
-      "${i}" "${role}" "${status}" "${pid_str}" "${VM_RAM}" "${VM_CPUS}" "${mac_addr}" "${ports_str}"
+      "${i}" "${role}" "${status}" "${pid_str}" "${vm_ram}" "${VM_CPUS}" "${mac_addr}" "${ports_str}"
   done
   echo "=========================================================================================================================="
   echo "Exemplos de Acesso aos Serviços:"
@@ -249,7 +262,7 @@ fi
 case "${ACTION}" in
   start)
     if [ "${TARGET}" = "all" ]; then
-      echo "=== Iniciando todas as ${TOTAL_VMS} VMs (RAM: ${VM_RAM} cada) ==="
+      echo "=== Iniciando todas as ${TOTAL_VMS} VMs (Padrão: ${VM_RAM}, db01: ${DB_VM_RAM}) ==="
       for i in $(seq 1 "${TOTAL_VMS}"); do
         start_single_vm "${i}"
       done
@@ -306,7 +319,7 @@ case "${ACTION}" in
     echo "  $0 status           # Exibe o painel de status e portas"
     echo ""
     echo "Variáveis de ambiente opcionais:"
-    echo "  VM_RAM=1G VM_CPUS=1 $0 start all"
+    echo "  VM_RAM=1G DB_VM_RAM=2G VM_CPUS=1 $0 start all"
     echo "  NET_MODE=bridge BRIDGE_IF=virbr0 $0 start all"
     ;;
 
