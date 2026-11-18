@@ -1,0 +1,6 @@
+---
+apache_docker_db_host: "10.0.2.2"
+apache_docker_db_port: "3304"
+apache_docker_db_name: "banco_do_tand"
+apache_docker_db_user: "tand"
+apache_docker_db_password: "123"

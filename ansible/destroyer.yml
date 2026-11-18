@@ -53,6 +53,12 @@
         state: absent
       failed_when: false
 
+    - name: Remover diretório de build do Apache
+      ansible.builtin.file:
+        path: /opt/apache_docker
+        state: absent
+      failed_when: false
+
     - name: Remover imagem Apache customizada
       community.docker.docker_image:
         name: ghcr.io/tandson42/ansible-project/apache

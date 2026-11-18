@@ -20,6 +20,18 @@
   delay: 3
   when: "'webservers' in group_names"
 
+- name: Healthcheck da conexão Web -> MySQL
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:8080/db.php"
+    method: GET
+    status_code: 200
+    return_content: true
+  register: healthcheck_web_db
+  until: healthcheck_web_db.status == 200 and (healthcheck_web_db.json.status | default('')) == 'ok'
+  retries: 5
+  delay: 3
+  when: "'webservers' in group_names"
+
 - name: Helthcheck porta 80 Nginx Load Balancer
   ansible.builtin.wait_for:
     host: 127.0.0.1

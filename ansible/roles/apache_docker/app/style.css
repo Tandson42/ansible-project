@@ -8,6 +8,10 @@
 	--border: #334155;
 	--status-bg: #064e3b;
 	--status-text: #6ee7b7;
+	--status-pending-bg: #3b2f06;
+	--status-pending-text: #fcd34d;
+	--status-error-bg: #4c0519;
+	--status-error-text: #fda4af;
 	--button-text: #0f172a;
 	--shadow: rgba(0, 0, 0, 0.3);
 }
@@ -22,6 +26,10 @@
 	--border: #cbd5e1;
 	--status-bg: #dcfce7;
 	--status-text: #15803d;
+	--status-pending-bg: #fef3c7;
+	--status-pending-text: #b45309;
+	--status-error-bg: #ffe4e6;
+	--status-error-text: #be123c;
 	--button-text: #ffffff;
 	--shadow: rgba(15, 23, 42, 0.12);
 }
@@ -97,6 +105,16 @@ main {
 	margin-bottom: 1.5rem;
 }
 
+.status-badge.status-pending {
+	background-color: var(--status-pending-bg);
+	color: var(--status-pending-text);
+}
+
+.status-badge.status-error {
+	background-color: var(--status-error-bg);
+	color: var(--status-error-text);
+}
+
 .card h2 {
 	margin: 0 0 1rem;
 	font-size: 2rem;
@@ -117,6 +135,18 @@ main {
 
 .system-card h2 {
 	margin-bottom: 0.5rem;
+}
+
+.db-header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
+.db-header .status-badge {
+	margin-bottom: 0.75rem;
 }
 
 .system-description {
@@ -180,6 +210,12 @@ main {
 .btn:hover {
 	background-color: var(--primary-hover);
 	transform: translateY(-1px);
+}
+
+.btn:disabled {
+	opacity: 0.65;
+	cursor: not-allowed;
+	transform: none;
 }
 
 .btn:focus-visible {

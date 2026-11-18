@@ -1,11 +1,51 @@
 ---
-- name: Baixando imagem Apache customizada
+- name: Garantir diretório de build da aplicação Apache
+  ansible.builtin.file:
+    path: /opt/apache_docker
+    state: directory
+    mode: "0755"
+
+- name: Copiar Dockerfile da aplicação Apache
+  ansible.builtin.copy:
+    src: Dockerfile
+    dest: /opt/apache_docker/Dockerfile
+    mode: "0644"
+  register: apache_docker_dockerfile_copy
+
+- name: Copiar arquivos da aplicação Web
+  ansible.builtin.copy:
+    src: app/
+    dest: /opt/apache_docker/app/
+    mode: "0644"
+    directory_mode: "0755"
+  register: apache_docker_app_copy
+
+- name: Construir imagem Apache + PHP customizada
   community.docker.docker_image:
     name: ghcr.io/tandson42/ansible-project/apache
     tag: latest
-    source: pull
-    force_source: true
+    source: build
+    build:
+      path: /opt/apache_docker/app
+      dockerfile: /opt/apache_docker/Dockerfile
+    force_source: "{{ apache_docker_dockerfile_copy.changed or apache_docker_app_copy.changed }}"
   notify: Recriar container Apache
 
-- name: Forçar a execução dos handlers antes das roles
+- name: Forçar a execução dos handlers antes das próximas etapas
   ansible.builtin.meta: flush_handlers
+
+- name: Garantir que o container Apache está em execução com conexão ao MySQL
+  community.docker.docker_container:
+    name: web-server
+    image: ghcr.io/tandson42/ansible-project/apache:latest
+    state: started
+    restart_policy: unless-stopped
+    published_ports:
+      - "8080:80"
+    env:
+      DB_HOST: "{{ apache_docker_db_host }}"
+      DB_PORT: "{{ apache_docker_db_port }}"
+      DB_NAME: "{{ apache_docker_db_name }}"
+      DB_USER: "{{ apache_docker_db_user }}"
+      DB_PASSWORD: "{{ apache_docker_db_password }}"
+      WEB_NODE_NAME: "{{ inventory_hostname }}"

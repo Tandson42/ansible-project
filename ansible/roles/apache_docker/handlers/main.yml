@@ -8,3 +8,10 @@
     restart_policy: unless-stopped
     published_ports:
       - "8080:80"
+    env:
+      DB_HOST: "{{ apache_docker_db_host }}"
+      DB_PORT: "{{ apache_docker_db_port }}"
+      DB_NAME: "{{ apache_docker_db_name }}"
+      DB_USER: "{{ apache_docker_db_user }}"
+      DB_PASSWORD: "{{ apache_docker_db_password }}"
+      WEB_NODE_NAME: "{{ inventory_hostname }}"

@@ -29,6 +29,25 @@
 		<button type="button" class="btn" id="explore-button">Explorar Diretórios</button>
 	</div>
 
+	<section class="card system-card" aria-labelledby="db-title">
+		<div class="db-header">
+			<div>
+				<span class="status-badge status-pending" id="db-badge">🔄 Verificando MySQL...</span>
+				<h2 id="db-title">Conexão com Banco de Dados</h2>
+			</div>
+			<button type="button" class="btn" id="db-refresh">Testar Conexão</button>
+		</div>
+		<p class="system-description">Status em tempo real da conexão entre este servidor web e o MySQL em <code>db01</code>.</p>
+		<dl class="system-info" id="db-info">
+			<div><dt>Servidor Web (Backend)</dt><dd data-db="node">Verificando...</dd></div>
+			<div><dt>Status</dt><dd data-db="status">Verificando...</dd></div>
+			<div><dt>Endpoint MySQL</dt><dd data-db="endpoint">Verificando...</dd></div>
+			<div><dt>Banco de Dados</dt><dd data-db="database">Verificando...</dd></div>
+			<div><dt>Versão do MySQL</dt><dd data-db="version">Verificando...</dd></div>
+			<div><dt>Hora no Servidor DB</dt><dd data-db="server_time">Verificando...</dd></div>
+		</dl>
+	</section>
+
 	<section class="card system-card" aria-labelledby="system-title">
 		<h2 id="system-title">Informações do sistema</h2>
 		<p class="system-description">Dados disponibilizados pelo navegador sobre o dispositivo e o ambiente de acesso.</p>

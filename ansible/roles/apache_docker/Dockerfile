@@ -1,4 +1,7 @@
-#imagem apache2 padrão
-FROM httpd:latest
-#copiando projeto para dir publico
-COPY ./ /usr/local/apache2/htdocs/
+# Imagem Apache + PHP com suporte a MySQL
+FROM php:8.3-apache
+
+RUN docker-php-ext-install pdo_mysql mysqli
+
+# Copiando projeto para o DocumentRoot do Apache
+COPY ./ /var/www/html/
